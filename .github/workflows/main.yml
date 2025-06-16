@@ -1,1 +1,48 @@
+name: 🚀 CI/CD for FastAPI Greeting App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    name: 🔧 Build & Deploy to Docker Hub
+    runs-on: ubuntu-latest
+ 
+    steps:
+    # Step 1: Checkout source code
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v3
+
+    # Step 2: Setup Python
+    - name: 🐍 Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    # Step 3: Install dependencies
+    - name: 📦 Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 4: Optional Linting (Code Quality)
+    - name: ✅ Lint Code with Flake8
+      run: |
+        pip install flake8
+        flake8 app --max-line-length=120 || true
+
+    # Step 5: Authenticate with Docker Hub
+    - name: 🔐 Login to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # Step 6: Build Docker image
+    - name: 🛠️ Build Docker Image
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/greeting-api:latest .
+
+    # Step 7: Push Docker image to Docker Hub
+    - name: 📤 Push Image to Docker Hub
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/greeting-api:latest
 
